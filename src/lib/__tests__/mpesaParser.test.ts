@@ -1,4 +1,5 @@
 import { parseMpesaSms, parseMpesaSmsBatch } from '../mpesaParser';
+import { sampleMessages } from '../sampleMessages';
 
 describe('parseMpesaSms', () => {
   it('parses a send money message', () => {
@@ -106,5 +107,14 @@ TFC3D4E5F6 Confirmed. Ksh450.00 paid to NAIVAS SUPERMARKET LTD. on 2/7/24 at 6:1
 
     const parsed = parseMpesaSmsBatch(blob);
     expect(parsed.map((item) => item.kind)).toEqual(['send', 'receive', 'buygoods']);
+  });
+
+  it('parses every bundled sample message and gives each a unique code', () => {
+    const parsed = parseMpesaSmsBatch(sampleMessages('2026-08'));
+    expect(parsed).toHaveLength(8);
+    expect(new Set(parsed.map((item) => item.code)).size).toBe(8);
+    for (const transaction of parsed) {
+      expect(transaction.code).toMatch(/^[A-Z0-9]{10}$/);
+    }
   });
 });
